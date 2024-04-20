@@ -17,7 +17,7 @@ The overall design diagram is the following:
 Find below some relevant details about the test environment used. In case of using a diferent environment, it could be required to make some minor adaptations in the scripts:
 
 - __Zigbee coordinators (2x)__: Sonoff ZBDongle-P. In case of using a different one, it could involve to change the commands to read and write non volatile memory in the dongles.
-- __Zigbee2mqtt nodes (2x)__: usage of up-to-date Alpine Linux distribution to execute zigbee2mqtt service. Zigbee2mqtt application is deployed and started and stopped using Alpine service commands defined for that purpose.
+- __Zigbee2mqtt nodes (2x)__: usage of up-to-date Alpine Linux distribution to execute zigbee2mqtt service (https://www.zigbee2mqtt.io/). Zigbee2mqtt application is deployed and started and stopped using Alpine service commands defined for that purpose.
   - Example of Alpine service content of /etc/init.d/zigbee2mqtt to start and stop the application with rc-service command: https://github.com/chemadh/zigbee2mqtt_ha/blob/main/zigbee2mqtt_alpine_service_example
 - __MQTT broker node__: Usage of Linux Debian distribution for High-Availability control script execution. Home assistant containing the MQTT broker component communicating with Zigbee2mqtt deployed in Docker mode in the same Linux node. Some referrence instructions:
   - Home Assistant supervised setup: https://community.home-assistant.io/t/installing-home-assistant-supervised-using-debian-12/200253
@@ -27,9 +27,23 @@ Common components used in the nodes previously defined:
 
 - __Linux packages__: rsync, snmp (net-snmp-tools for Alpine; snmpd, snmp, libsnmp-dev, for Debian).
   - In addition to this, specifically for zigbee2mqtt nodes: python3, py3-pip. Instalation of zigpy-znp python component (pip install zigpy-znp). Aditional info in this link: https://github.com/zigpy/zigpy-znp/blob/0cacf7a51d205ac3a19acde10a8115cf5ac36ce1/TOOLS.md
-- __SNMP MIBs__: The scripts notify about execution results using SNMP traps. The MIBs to be incluided in each linux node using the proposed scripts are stored in https://github.com/chemadh/zigbee2mqtt_ha/tree/main/MIBs 
+- __NTPD or Timesyncd__ time sinchronization service to be active in each node to ensure a correct syncrhonization of most recent files. It can be skipped if the nodes are virtualized and obtaining time reference from a hypervisor cluster (like Proxmox Virtual Environment - https://pve.proxmox.com/wiki/Main_Page -). 
+- __SNMP MIBs__: The scripts notify about execution results using SNMP traps. The MIBs to be incluided in each linux node using the proposed scripts are stored in https://github.com/chemadh/zigbee2mqtt_ha/tree/main/MIBs . In case of no monitoring system available in your installation, it is still recommended to install the SNMP packages and MIBs to avoid script execution errors (no matter if the SNMP traps are not finally attended by any agent).
 - __Enable remote ssh connection__ between components without interactive credentials. Some example instructions here: https://www.thegeekdiary.com/how-to-run-scp-without-password-prompt-interruption-in-linux/
 
 __Zigbee dongle configuration__:
-- 
-## Configuration files synchronization scripts
+
+- Zigbee IEEE address of active Zigbee coordinator (Sonoff ZBDongle-P) must be flashed as secondary IEEE address of the stand-by Zigbee coordinator. It is required to be identified as the same node by the rest of the zigbee network when the service is switched-over between coordinators. Please note that some of the flashing tools only shows the primary IEEE address, but it doesn't mean that the secondary address is efectively updated. Some guides below to update firmware, read and write IEEE address in Sonoff ZBDongle-P:
+  - https://sonoff.tech/wp-content/uploads/2021/12/SONOFF-Zigbee-3.0-USB-dongle-plus-firmware-flashing-1-1.pdf
+  - https://www.zigbee2mqtt.io/guide/adapters/flashing/copy_ieeaddr.html
+  - https://github.com/JelmerT/cc2538-bsl
+
+## Scripts for synchronization of configuration files from active to stand-by zigbee2mqtt
+
+## Scripts for Zigbee2mqtt High-Availability centralized control
+
+## Usage of High-Availability control scripts from Home Assistant
+
+## Possible further improvements
+
+
