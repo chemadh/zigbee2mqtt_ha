@@ -1,0 +1,11 @@
+#!/sbin/openrc-run
+
+name="zigbee2mqtt"
+directory="/opt/zigbee2mqtt/"
+command="npm start"
+command_background="yes"
+pidfile="/opt/zigbee2mqtt/rc-service.pid"
+
+depend() {
+        after sshd
+}
