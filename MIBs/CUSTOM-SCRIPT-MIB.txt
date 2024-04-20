@@ -1,0 +1,87 @@
+CUSTOM-SCRIPT-MIB DEFINITIONS ::= BEGIN
+
+--
+-- Example MIB objects for agent module example implementations
+--
+
+IMPORTS
+    MODULE-IDENTITY, OBJECT-TYPE, Integer32,
+    NOTIFICATION-TYPE                       FROM SNMPv2-SMI
+    SnmpAdminString                         FROM SNMP-FRAMEWORK-MIB
+    netSnmp                                 FROM NET-SNMP-MIB
+    RowStatus, StorageType                  FROM SNMPv2-TC
+    InetAddressType, InetAddress            FROM INET-ADDRESS-MIB
+;
+
+netSnmpScript MODULE-IDENTITY
+    LAST-UPDATED "200406150000Z"
+    ORGANIZATION "www.net-snmp.org"
+    CONTACT-INFO    
+	 "postal:   Wes Hardaker
+                    P.O. Box 382
+                    Davis CA  95617
+
+          email:    net-snmp-coders@lists.sourceforge.net"
+    DESCRIPTION
+	"MIBs for custom scripts notifications"
+    REVISION     "200406150000Z"
+    DESCRIPTION
+	"Corrected notification example definitions"
+    REVISION     "200202060000Z"
+    DESCRIPTION
+	"First draft"
+    ::= { netSnmp 2 }
+
+--
+-- top level structure
+--
+netSnmpResultNotif        OBJECT IDENTIFIER ::= { netSnmpScript 1 }
+
+
+
+--
+--  Example Tables
+--
+	
+netSnmpScriptResEntry NOTIFICATION-TYPE
+    OBJECTS     { scriptName, scriptHost, scriptMessage, scriptStatus}
+    STATUS      current
+    DESCRIPTION
+        "script result data structure"
+::= { netSnmpResultNotif 1 }
+
+
+scriptName OBJECT-TYPE
+    SYNTAX      OCTET STRING (SIZE(1..32))
+    MAX-ACCESS  not-accessible
+    STATUS      current
+    DESCRIPTION
+	"Script name reporting the status"
+    ::= { netSnmpScriptResEntry 1 }
+
+scriptHost OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+	"host name where the script is being executed"
+    ::= { netSnmpScriptResEntry 2 }
+
+scriptMessage OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+	"message reported by the script"
+    ::= { netSnmpScriptResEntry 3 }
+
+scriptStatus OBJECT-TYPE
+    SYNTAX      OCTET STRING
+    MAX-ACCESS  read-create
+    STATUS      current
+    DESCRIPTION
+	"Status result value reported by the script"
+    ::= { netSnmpScriptResEntry 4 }
+
+
+END
