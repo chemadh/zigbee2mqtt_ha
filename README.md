@@ -7,3 +7,5 @@ High Availability controller prototype for two zigbee2mqtt instances with indepe
 - Automatic synchronization of zigbe2mqtt configuration and data files from active to stand-by instance, to ensure an up-to-date zigbee and mqtt interactions in case of active to stand-by switch over is triggered.
 - Automatic synchronization of Sonoff ZDonble-P coordinator Non-Volatile RAM from active to stand-by instance, in each zigbee2mqtt node where the dongle is connected to. It enables a seamless change of zigbee coordinator from active to stand-by node when required (avoiding impact on the rest of zigbee nodes, not requiring to re-join them to the network).
 - Control point enabled in a third node where MQTT broker is working, to detect issues with active zigbmee2mqtt instance and trigger the switch-over to change service to stanby-by node. The prototype includes the automated management of this control point in a Home Assistant instance with MQTT component configured
+
+<img src="./capture_01.PNG" title="./zigbee2mqtt_ha_architecture.PNG" width=700px></img>
