@@ -12,9 +12,9 @@ The overall design is shown following diagram:
 
 <img src="./zigbee2mqtt_ha_architecture.PNG" title="zigbee2mqtt HA architecture" width=800px></img>
 
-## Test environment details
+## Environment details
 
-Find below some relevant details about the test environment used. In case of using a diferent environment, it could be required to make some minor adaptations in the scripts:
+Find below some relevant details about the validation environment used. In case of using a diferent environment, it could be required to make some minor adaptations in the scripts provided:
 
 - __Zigbee coordinators (2x)__: Sonoff ZBDongle-P. In case of using a different one, it could involve to change the commands to read and write non volatile memory in the dongles.
 - __Zigbee2mqtt nodes (2x)__: usage of up-to-date Alpine Linux distribution to execute zigbee2mqtt service (https://www.zigbee2mqtt.io/). Zigbee2mqtt application is deployed and started and stopped using Alpine service commands defined for that purpose. In case of using a different distribution, some minor changes could be required for remote start and stop of zigbee2mqtt from controlling scripts.
