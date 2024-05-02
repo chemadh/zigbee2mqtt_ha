@@ -41,6 +41,22 @@ __Zigbee dongle configuration__:
 
 ## Scripts for synchronization of configuration files from active to stand-by zigbee2mqtt
 
+Each zigbee2mqtt High-Availability instance needs to synchronize the configuration files from active to stand-by instances. The following scripts to be deployed in each zigbee2mqtt instance are shared to achieve it:
+
+- [/scripts/zigbee2mqtt1/syncZigbee2mqttConfig.sh](./scripts/zigbee2mqtt1/syncZigbee2mqttConfig.sh)
+- [/scripts/zigbee2mqtt2/syncZigbee2mqttConfig.sh](./scripts/zigbee2mqtt2/syncZigbee2mqttConfig.sh)
+
+The both files defines the same logic, with different example configuration for local and remote zigbee2mqtt nodes parameters. The first lines in each script contains the configuration variables to be updated to each environment. Explanation of each parameter, below:
+
+- __local_aux_dir__: Path of the local zigbee2mqtt instance directory where the up-to-date active configuration files will be stored. Example value: /home/zigbee/scripts/zigbee2mqtt_config/
+- __remote_conf_dir__: SSH path (including IP and username) to the remote instance directory where the Zigbee2mqtt application reads and updates the configuration when it is active. Example value: zigbee@192.168.34.124:/opt/zigbee2mqtt/data/
+- __local_conf_dir__: Path of the local instance directory where the Zigbee2mqtt application reads and updates the configuration when it is active. Example value: /opt/zigbee2mqtt/data/
+- __local_user_name__: Linux username to execute rsync command. It should be enabled to execute SSH over remote zigbee2mqtt node without interactive credentials. Example value: zigbee
+- __snmp_server__: SNMP server where the script will send SNMP traps (v2) notifying about the result of the execution. If this functionality is not required, the value of the variable should be leaved empty. Example value: 192.168.34.103:1234
+- __snmp_host__: source SNMP host of the trap, following the MIB defined for this purpose. It can be left empty if the SNMP functionality is not required. Example value: zigbee2mqtt1
+- __local_zigbee2mqtt_frontend_ip__: Zigbee2mqtt normally uses a web frontend to enable application operation. Since the web frontend IP is defined in the configuration files, it is required to be updated when synchronizing the configuration files between different nodes. This parameter defines de local zigbee2mtt instance web frontend IP. Example value: 192.168.34.123
+- __remote_zigbee2mqtt_frontend_ip__: The same as the parameter above, but in this case, referring to the remote zigbee2mqtt instance web frontend IP. Example value: 192.168.34.124
+
 ## Scripts for Zigbee2mqtt High-Availability centralized control
 
 ## Usage of High-Availability control scripts from Home Assistant
