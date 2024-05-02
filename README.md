@@ -59,6 +59,15 @@ The both files defines the same logic, with different example configuration for 
 
 ## Scripts for Zigbee2mqtt High-Availability centralized control
 
+A third node will control the active to stand-by failover zigbee2mqtt coordinator, whose configuration is synchronized using the mechanism defined above. It makes sense that this third node should be the MQTT broker node (like Mosqitto runing in Home Assistant enviornment), since this element will be notified in case the communication with active zigbee2mqtt fails. The following set of scripts are provided for this purpose:
+
+### [ping_mqtts.sh](./scripts/homeAssistant/ping_mqtts.sh)
+
+
+### [stopZigbee2mqtt1.sh](./scripts/homeAssistant/stopZigbee2mqtt1.sh) / [stopZigbee2mqtt2.sh](./scripts/homeAssistant/stopZigbee2mqtt2.sh) 
+
+### [activeZigbee2mqtt1.sh](./scripts/homeAssistant/activeZigbee2mqtt1.sh) / [activeZigbee2mqtt2.sh](./scripts/homeAssistant/activeZigbee2mqtt2.sh)
+
 ## Usage of High-Availability control scripts from Home Assistant
 
 ## Possible further improvements
