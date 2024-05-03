@@ -57,6 +57,15 @@ The both files defines the same logic, with different example configuration for 
 - __local_zigbee2mqtt_frontend_ip__: Zigbee2mqtt normally uses a web frontend to enable application operation. Since the web frontend IP is defined in the configuration files, it is required to be updated when synchronizing the configuration files between different nodes. This parameter defines de local zigbee2mtt instance web frontend IP. Example value: 192.168.34.123
 - __remote_zigbee2mqtt_frontend_ip__: The same as the parameter above, but in this case, referring to the remote zigbee2mqtt instance web frontend IP. Example value: 192.168.34.124
 
+The scripts are intended to be run as cron or timer services (i.e. each 5 minutes), to ensure an automatic zigbmee2mqtt content sinchronization. Example of this type of config in Alpine Linux with root user (more instructions in https://lucshelton.com/blog/cron-jobs-with-alpine-linux-and-docker/):
+
+- include the following content in /etc/crontabs/root: */5     *       *       *       *       run-parts /etc/periodic/5min
+- execute mkdir /etc/periodic/5min
+- include the script content in /etc/periodic/5min/syncZigbee2mqttConfig
+  - No .sh extension should be added to the servcie script.
+
+
+
 ## Scripts for Zigbee2mqtt High-Availability centralized control
 
 A third node will control the active to stand-by failover zigbee2mqtt coordinator, whose configuration is synchronized using the mechanism defined above. It makes sense that this third node should be the MQTT broker node (like Mosqitto runing in Home Assistant enviornment), since this element will be notified in case the communication with active zigbee2mqtt fails. The following set of scripts are provided for this purpose:
@@ -70,18 +79,51 @@ Script to check connectivity from controller to both zigbee2mqtt intances. It is
 - __snmp_server__: SNMP server where the script will send SNMP traps (v2) notifying about the result of the execution. If this functionality is not required, the value of the variable should be leaved empty. Example value: 192.168.34.103:1234
 - __snmp_host__: Source SNMP host of the trap, following the MIB defined for this purpose. It can be left empty if the SNMP functionality is not required. Example value: homeassistant
 
+The script can be directly executed from the linux prompt. No command-line parameters are required.
+
 ### [stopZigbee2mqtt1.sh](./scripts/homeAssistant/stopZigbee2mqtt1.sh) / [stopZigbee2mqtt2.sh](./scripts/homeAssistant/stopZigbee2mqtt2.sh) 
 
 Couple of scritps to stop remotely each zigbee2mqtt instance. Used by the controller node to initiate a manual switchover between active and stand-by nodes, when MQTT can detect service interruption in the active zigbee2mqtt node. The first lines in the script contains the configuration variables to be updated for each environment. Explanation of each parameter, below:
 
 - __zigbee2mqtt1_remote_ssh__ / __zigbee2mqtt2_remote_ssh__ (Depending on the script for each zigbee2mqtt instance): SSH user and IP to use for remote connection with the zigbee2mqtt node. The user should be previously configured to disable interactive login. Example value: "zigbee@192.168.34.123"
-- __zigbee2mqtt_stop_cmd__: Remote stop command to execute in the remote SSH session to stop de zigbee2mqtt instance. In the case of using an Alipine Linux distribution like in this prototype, the following can be used: "sudo rc-service zigbee2mqtt stop"
+- __zigbee2mqtt_stop_cmd__: Remote stop command to execute in the remote SSH session to stop the zigbee2mqtt instance. In the case of using an Alipine Linux distribution like in this prototype, the following can be used: "sudo rc-service zigbee2mqtt stop"
 - __snmp_server__: SNMP server where the script will send SNMP traps (v2) notifying about the result of the execution. If this functionality is not required, the value of the variable should be leaved empty. Example value: 192.168.34.103:1234
 - __snmp_host__: Source SNMP host of the trap, following the MIB defined for this purpose. It can be left empty if the SNMP functionality is not required. Example value: homeassistant
 
+The script can be directly executed from the linux prompt. No command-line parameters are required.
+
 ### [activeZigbee2mqtt1.sh](./scripts/homeAssistant/activeZigbee2mqtt1.sh) / [activeZigbee2mqtt2.sh](./scripts/homeAssistant/activeZigbee2mqtt2.sh)
 
+Couple of scripts to perform zigbee2mqtt switchover, changing the active service in the first or second node. Sequence of activities in each script:
 
+- __activeZigbee2mqtt1.sh__: it applies swicthover to active the service in zigbee2mqtt first node.
+  - Stop zigbee2mqtt second node, that should be in active status.
+  - Stop zigbee2mqtt first node, that should be in stand-by status (to ensure it is not previously active).
+  - Extract zigbee USB dongle coordinator NVRAM memory content from zigbee2mqtt second node, copying it to zigbee2mqtt first node.
+  - Load coordinator NVRAM memory content in zigbee2mqtt first node's dongle, load the synchronized zigbee2mqtt configuration files and start the first node instance.
+  - Restart zigbee2mqtt second node, to leave it clean in case of scheduling a new switchover further. __Zigbee2mqtt should not start on system statup to enable this mechanism__.
+- __activeZigbee2mqtt2.sh__: it applies swicthover to active the service in zigbee2mqtt second node.
+  - Stop zigbee2mqtt first node, that should be in active status.
+  - Stop zigbee2mqtt second node, that should be in stand-by status (to ensure it is not previously active).
+  - Extract zigbee USB dongle coordinator NVRAM memory content from zigbee2mqtt first node, copying it to zigbee2mqtt second node.
+  - Load coordinator NVRAM memory content in zigbee2mqtt second node's dongle, load the synchronized zigbee2mqtt configuration files and start the second node instance.
+  - Restart zigbee2mqtt first node, to leave it clean in case of scheduling a new switchover further. __Zigbee2mqtt should not start on system statup to enable this 
+
+Both scripts defines similar logic, with different details to apply the switchover to a different node. The first lines in the script contains the configuration variables to be updated for each environment. Explanation of each parameter, below:
+- __zigbee2mqtt1_remote_ssh__: SSH user and IP to use for remote connection with the first zigbee2mqtt node. The user should be previously configured to disable interactive login. Example value:"zigbee@192.168.34.123"
+- __zigbee2mqtt2_remote_ssh__: SSH user and IP to use for remote connection with the second zigbee2mqtt node. The user should be previously configured to disable interactive login. Example value:"zigbee@192.168.34.124"
+- __zigbee2mqtt_stop_cmd__: Remote stop command to execute in the remote SSH session to stop the zigbee2mqtt instance. In the case of using an Alipine Linux distribution like in this prototype, the following can be used: "sudo rc-service zigbee2mqtt stop"
+- __zigbee2mqtt_start_cmd__: Remote start service command to execute in the remote SSH session to launch zigbee2mqtt instance. In the case of using an Alipine Linux distribution like in this prototype, the following can be used: "sudo rc-service zigbee2mqtt start"
+- __snmp_server__: SNMP server where the script will send SNMP traps (v2) notifying about the result of the execution. If this functionality is not required, the value of the variable should be leaved empty. Example value: 192.168.34.103:1234
+- __snmp_host__: Source SNMP host of the trap, following the MIB defined for this purpose. It can be left empty if the SNMP functionality is not required. Example value: homeassistant
+- __coordinator_port_zigbee2mqtt1__: USB port where zigbee USB dongle is available in zigbee2mqtt1 node. Example value: "/dev/ttyUSB0"
+- __coordinator_port_zigbee2mqtt2__:  USB port where zigbee USB dongle is available in zigbee2mqtt2 node. Example value: "/dev/ttyUSB0"
+- __zigbee2mqtt_nvram_path__: Directory where the NVRAM dump file from USB coordinator dongle will be stored. Example value: "/home/zigbee/scripts/"
+- __zigbee2mqtt_nvram_file__: Name of the NVRAM dump json file from USB coordinator dongle. Eample value: "backup_coordinator_nvram.json"
+- __local_aux_dir__: Path of the local zigbee2mqtt instance directory where the up-to-date active configuration files are be stored. Example value: /home/zigbee/scripts/zigbee2mqtt_config/
+- __local_conf_dir__: Path of the local instance directory where the Zigbee2mqtt application reads and updates the configuration when it is active. Example value: /opt/zigbee2mqtt/data/
+
+The scripts can be directly executed from the linux prompt. No command-line parameters are required.
 
 ## Usage of High-Availability control scripts from Home Assistant
 
