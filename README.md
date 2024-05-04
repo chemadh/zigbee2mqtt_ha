@@ -127,6 +127,14 @@ The scripts can be directly executed from the linux prompt. No command-line para
 
 ## Usage of High-Availability control scripts from Home Assistant
 
+### Environment preparation for Home Assistant installed in Docker
+
+Running shell scripts in Home Assistant under Docker environment is problematic in case of requiring additional packages, like in our SNMP case. The reason for this is the Home Assistant upgrade process: it will not preserve the custom packages installed by the user under the Home Assistant Docker environment. The proposed workaround to avoid this is executing the scripts remotely, connecting from Docker to de host machine where it is installed (where the control scripts defined above will be available).
+
+To follow this approach, the Home Assistant docker environment should enable the next points (it should be accessible from host machine executing sudo docker exec -it homeassistant bash):
+
+- Generate the RSA public file for the host machine user to connect to via SSH from Home Assistant Docker.
+
 ## Possible further improvements
 
 
