@@ -127,13 +127,58 @@ The scripts can be directly executed from the linux prompt. No command-line para
 
 ## Usage of High-Availability control scripts from Home Assistant
 
+This section assumes that the controller scripts defined previously are deployed in a Linux system where Home Assistant is also available. the two zigbee2mqtt remote nodes should be also running with automatic zigbee2mqtt config synchronization up and running.
+
 ### Environment preparation for Home Assistant installed in Docker
 
 Running shell scripts in Home Assistant under Docker environment is problematic in case of requiring additional packages, like in our SNMP case. The reason for this is the Home Assistant upgrade process: it will not preserve the custom packages installed by the user under the Home Assistant Docker environment. The proposed workaround to avoid this is executing the scripts remotely, connecting from Docker to de host machine where it is installed (where the control scripts defined above will be available).
 
-To follow this approach, the Home Assistant docker environment should enable the next points (it should be accessible from host machine executing sudo docker exec -it homeassistant bash):
+To follow this approach, the Home Assistant docker environment should enable the next points (it should be accessible from host machine executing sudo docker exec -it homeassistant bash). This parametrization is mainly needed to enable SSH connection without interactive credentials again:
 
-- Generate the RSA public file for the host machine user to connect to via SSH from Home Assistant Docker.
+- Generate the RSA public file for the host machine user to connect to via SSH from Home Assistant Docker. In order to avoid accidental removal, it is recommended to be stored in /config/.ssh/id_rsa.pub path of Home Assistant Docker.
+- Define a custom "known hosts" file in a path where Home Assistant Docker won't remove it. It is recommended to be stored in /config/.ssh/known_hosts.
+- Creation of "sh" directory in root dir of Home Assistant Docker. Scripts to be defined there to link with the High Availability control scripts:
+  - Parameters to configure:
+    - < user >: User of Home Assistant host machine
+    - < ip >: IP of host machine
+    - < script_path >: Path directory where the controller scripts are available in the host machine
+      
+### ping_mqtts.sh
+```
+#!/bin/bash
+
+ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa <user>@<ip> '<script_path>/ping_mqtts.sh'
+```
+
+### stopZigbee2mqtt1.sh
+```
+#!/bin/bash
+
+ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa <user>@<ip> '<script_path>/stopZigbee2mqtt1.sh'
+
+```
+
+### stopZigbee2mqtt2.sh
+```
+#!/bin/bash
+
+ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa <user>@<ip> '<script_path>/stopZigbee2mqtt2.sh'
+
+```
+### activeZigbee2mqtt1.sh
+```
+#!/bin/bash
+
+ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa -f <user>@<ip> 'rm <script_path>/result.log; nohup <script_path>/activeZigbee2mqtt1.sh ><script_path>result.log 2>&1 </dev/null &'
+
+```
+### activeZigbee2mqtt2.sh
+```
+#!/bin/bash
+
+ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa -f <user>@<ip> 'rm <script_path>/result.log; nohup <script_path>/activeZigbee2mqtt2.sh ><script_path>result.log 2>&1 </dev/null &'
+
+```
 
 ## Possible further improvements
 
