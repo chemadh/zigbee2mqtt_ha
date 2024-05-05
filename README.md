@@ -185,6 +185,218 @@ ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa -f <us
 
 ```
 
+### configuration.yaml additions in Home Assistant
+
+The following content can be added to configuration.yaml of Home Assistant in order to enable zigbee2mqtt as a sensor that can be monitored. The final purposes are:
+
+- Identification of the Zigbee2mqtt instance that is currently running, identified by its IP.
+- Identification of the active Zigbee2mqtt instance status. It allows Home Assistant automations to trigger the active to stand-by instance failover, when a transition to stop status is detected in the active Zigbee2mqtt node.
+
+```
+mqtt:
+  binary_sensor:
+    - name: "Zigbee2mqtt bridge status"
+      state_topic: "zigbee2mqtt/bridge/state"
+      unique_id: "zigbee2mtt bridge status"
+      value_template: '{{ value_json.state}}'
+      payload_on: "online"
+      payload_off: "offline"
+      device_class: running
+  sensor:
+    - name: "Zigbee2mqtt bridge info"
+      unique_id: "zigbee2mtt bridge info"
+      state_topic: "zigbee2mqtt/bridge/info"
+      value_template: >
+        "{% if "192.168.34.123" in value %}
+           {{ "192.168.34.123" }}
+         {% endif %}
+         {% if "192.168.34.124" in value %}
+           {{ "192.168.34.124" }}
+         {% endif %}"
+
+```
+Please update 192.168.34.123 and 192.168.34.124 IPs with your zigbee2mqtt instances IPs:
+
+In addition to this, The following content should be added too to configuration.yaml file of Home Assistant, in order to make available to Home Assistant automations the High-Availability zigbee2mqtt controller scripts:
+
+```
+shell_command:
+  failover_to_mqtt1: "bash ./sh/activeZigbee2mqtt1.sh"
+  failover_to_mqtt2: "bash ./sh/activeZigbee2mqtt2.sh"
+  ping_mqtts: "bash ./sh/ping_mqtts.sh"
+  stop_mqtt1: "bash ./sh/stopZigbee2mqtt1.sh"
+  stop_mqtt2: "bash ./sh/stopZigbee2mqtt2.sh"
+```
+Scripts' path should be updated in case of using a different location in Home Assistant storage.
+
+Home Assistant needs to be rebooted to reload configuration.yaml with new contents. If everything goes OK, the summary pannel should show something similar to the following capture:
+
+### Home Assistant Scripts
+
+The following extract of Home assistant scripts.yaml integrates the zigbee2mqtt functionalities with the Home Assistant control system. __Zigbee2mqtt nodes are identified by their IPs (192.168.34.123 / .124), so it should be updated to the IPs in use in each deployment__.
+
+- The following entry check the running status and applies the switchover to stand-by instance if the active is not in running status. 
+```
+zigbee2mqtt_check:
+  alias: zigbee2mqtt check
+  sequence:
+  - variables:
+      shellscriptres:
+  - alias: Control de estado zigbee2mqtt
+    if:
+    - condition: state
+      entity_id: binary_sensor.zigbee2mqtt_bridge_status
+      state: 'on'
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: zigbee2mqtt running
+        title: estado zigbee2mqtt
+      alias: Notificamos zigbee2mqtt running
+    else:
+    - service: notify.persistent_notification
+      data:
+        message: zigbee bridge is not running
+        title: zigbee2mqtt
+      alias: Notification about zigbee2mqtt status is not running
+    - alias: If zigbee2mqtt node is 192.168.34.123, applying swichover to .124
+      if:
+      - condition: template
+        value_template: '{{ ''192.168.34.123'' in states(''sensor.zigbee2mqtt_bridge_info'')  }} '
+      then:
+      - alias: Notification of failover to .124 zigbee2mqtt instance
+        service: notify.persistent_notification
+        data:
+          message: 'Zigbee2mqtt node stopped: 192.168.34.123. Applying switchover to 192.168.124'
+          title: zigbee2mqtt failover
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: shell_command.failover_to_mqtt2
+        data: {}
+        response_variable: shellscriptres
+    - alias: If zigbee2mqtt node is 192.168.34.124, applying swichover to .123
+      if:
+      - condition: template
+        value_template: '{{ ''192.168.34.124'' in states(''sensor.zigbee2mqtt_bridge_info'')  }} '
+      then:
+      - alias: notificamos failover a 123
+        service: notify.persistent_notification
+        data:
+          title: zigbee2mqtt failover
+          message: 'Zigbee2mqtt node stopped: 192.168.34.124. Applying switchover to 192.168.123'
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 10
+          milliseconds: 0
+      - service: shell_command.failover_to_mqtt1
+        data: {}
+        response_variable: shellscriptres
+  mode: single
+  icon: mdi:home-clock
+```
+- The following entry apply the switchover by stopping the active zigbee2mqtt node in a periodic manner. It should force the execution of the automation detecting that the active node is not running, and a switchover needs to be done.
+
+```
+periodic_zigbe2mqtt_switchover:
+  alias: periodic zigbee2mqtt switchover
+  sequence:
+  - variables:
+      ping_nodes_result:
+      mqtt_change_result:
+  - service: shell_command.ping_mqtts
+    data: {}
+    response_variable: ping_nodes_result
+    alias: Call to script ping_mqtts
+  - alias: Checking pings result
+    if:
+    - condition: template
+      value_template: '{{ ping_nodes_result[''stdout''] == ''success'' }}'
+    then:
+    - service: notify.persistent_notification
+      data:
+        message: Ping OK
+        title: Ping MQTTs result
+    - alias: If zigbee2mqtt node is 192.168.34.123, making switchover to .124
+      if:
+      - condition: template
+        value_template: '{{ ''192.168.34.123'' in states(''sensor.zigbee2mqtt_bridge_info'')  }} '
+      then:
+      - alias: Failover to .124 instance notification
+        service: notify.persistent_notification
+        data:
+          message: 'identified node: 192.168.34.123. switching over to 192.168.124'
+          title: zigbee2mqtt periodic switchover
+      - service: shell_command.stop_mqtt1
+        data: {}
+        response_variable: mqtt_change_result
+    - alias: If zigbee2mqtt node is 192.168.34.124, making switchover to .123
+      if:
+      - condition: template
+        value_template: '{{ ''192.168.34.124'' in states(''sensor.zigbee2mqtt_bridge_info'')  }} '
+      then:
+      - alias: Failover to .123 instance notification
+        service: notify.persistent_notification
+        data:
+          message: 'identified node: 192.168.34.124. switching over to 192.168.123'
+          title: zigbee2mqtt periodic switchover
+      - service: shell_command.stop_mqtt2
+        data: {}
+        response_variable: mqtt_change_result
+    else:
+    - service: notify.persistent_notification
+      data:
+        message: Ping Error
+        title: Resultado Ping MQTTs
+  mode: single
+  icon: mdi:arrow-oscillating
+
+```
+
+### Home Assistant automations 
+
+Finally, the following Home Assistant automations.yaml snippets defines the upper layer of the high-availability Zigbee2mqtt control system.
+
+- Automation to detect the zigbee2mqtt status change leaving the running status, to trigger the switchover to stand-by node script.
+```
+- id: '1702239851380'
+  alias: zigbee2mqtt stop detection
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.zigbee2mqtt_bridge_status
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: script.zigbee2mqtt_check
+    data: {}
+  mode: single
+```
+- Automation to perform a periodic switchover between zigbee2mqtt instances, to ensure a healthy status of both instances and dumping a reasonable fresh version of active USB coordinator dongle NVRAM content (it could be required to manually flush a new instance of the coordinator in case of catastrophic error).
+
+```
+- id: '1702417248508'
+  alias: Weekly zigbee2mqtt switch-over
+  description: ''
+  trigger:
+  - platform: time
+    at: 03:31:00
+  condition:
+  - condition: time
+    weekday:
+    - wed
+    - sun
+  action:
+  - service: script.periodic_zigbe2mqtt_switchover
+    data: {}
+  mode: single
+```
+
 ## Possible further improvements
 
 
