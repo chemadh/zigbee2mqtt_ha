@@ -215,7 +215,7 @@ mqtt:
          {% endif %}"
 
 ```
-Please update 192.168.34.123 and 192.168.34.124 IPs with your zigbee2mqtt instances IPs:
+Please update 192.168.34.123 and 192.168.34.124 IPs with your deployment zigbee2mqtt instances IPs.
 
 In addition to this, The following content should be added too to configuration.yaml file of Home Assistant, in order to make available to Home Assistant automations the High-Availability zigbee2mqtt controller scripts:
 
@@ -230,6 +230,8 @@ shell_command:
 Scripts' path should be updated in case of using a different location in Home Assistant storage.
 
 Home Assistant needs to be rebooted to reload configuration.yaml with new contents. If everything goes OK, the summary pannel should show something similar to the following capture:
+
+<img src="./capture_home_assistant_1.PNG" title="Home Assistant capture" width=300px></img>
 
 ### Home Assistant Scripts
 
