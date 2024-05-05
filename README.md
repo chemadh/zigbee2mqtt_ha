@@ -177,6 +177,7 @@ ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa -f <us
 
 ```
 ### activeZigbee2mqtt2.sh
+Same comment applicable from activeZigbee2mqtt1, above.
 ```
 #!/bin/bash
 
