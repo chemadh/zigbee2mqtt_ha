@@ -16,7 +16,7 @@ The overall design is shown in the following diagram:
 
 Find below some relevant details about the prototype environment used. In case of using a diferent environment, it could be required to make some minor adaptations in the scripts provided:
 
-- __Zigbee coordinators (2x)__: Sonoff ZBDongle-P. In case of using a different one, it could involve to change the commands to read and write non volatile memory in the dongles.
+- __Zigbee coordinators (2x)__: Sonoff ZBDongle-P, with Z-Stack-firmware (https://github.com/Koenkk/Z-Stack-firmware/tree/master/coordinator/Z-Stack_3.x.0/). In case of using a different one, it could involve to change the commands to read and write non volatile memory in the dongles.
 - __Zigbee2mqtt nodes (2x)__: usage of up-to-date Alpine Linux distribution to execute zigbee2mqtt service (https://www.zigbee2mqtt.io/). Zigbee2mqtt application is deployed and started and stopped using Alpine service commands defined for that purpose. In case of using a different distribution, some minor changes could be required for remote start and stop of zigbee2mqtt from controlling scripts.
   - Example of Alpine service content of /etc/init.d/zigbee2mqtt to start and stop the application with rc-service command: https://github.com/chemadh/zigbee2mqtt_ha/blob/main/zigbee2mqtt_alpine_service_example . __The zigbee2mqtt service should NOT be launched on node startup, otherwise the HA control prototype will not work properly__.
   - Alpine linux user is expected to allow sudo, to allow access to linux service scripts to start and stop zigbee2mqtt, as well as allowing zigpy-znp to access to dongle USB port.
@@ -398,7 +398,13 @@ Finally, the following Home Assistant automations.yaml snippets defines the uppe
     data: {}
   mode: single
 ```
+## Validation scenario of the solution
+
+The prototype is up and running during the last months applying two swicthovers per week. during this time the zigbee network has been expanded from few nodes to use more than 20 devices between sensors and actuators of diferent types and brands. No issues found up to now.
+
+It has also been tested by directly disconnecting the active USB dongle from the environment. It has always leaded to a correct service interruption detection in Home Assistant and switchover to stand-by node (with the caveat of not being able to load the last up-to-date NVRAM dump from active node, but not leading to service disruption, if the last dump is reasonably recent by previosly applying scheduled switchovers).
 
 ## Possible further improvements
 
-
+- Hopefully a similar functionality would be included in the future to Zigbee2mqtt and Mosqitto MQTT broker, accesible via configuration instead of requiring external scripts like these ones.
+- The main caveat of the present prototype approach is the lack of the functionality of extracting NVRAM dump file of USB Dongle without stopping the Zigbee2mqtt coordinator. IT seems to be due to Sonoff ZBDongle-P with Z-Stack-firmware / Zigbee2mqtt limitations that are not allowing to make any dump meanwhile Zigbee2mqtt is using the coordinator USB port. Unfortunatelly, it only leaves as alternative to schedule a periodic swichover to have a reasonable fresh dump to apply to the stand-by coordinator in case of active node failure, with the cost of an around 1 minute of Zigbee service interruption (required to complete the switchover).
