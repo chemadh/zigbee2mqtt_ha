@@ -129,6 +129,8 @@ The scripts can be directly executed from the linux prompt. No command-line para
 
 This section assumes that the controller scripts defined previously are deployed in a Linux system where Home Assistant is also available. the two zigbee2mqtt remote nodes should be also running with automatic zigbee2mqtt config synchronization up and running.
 
+In addition to this, there are some limitations related to the Home Assistant shell script environment that needs to be addressed.
+
 ### Environment preparation for Home Assistant installed in Docker
 
 Running shell scripts in Home Assistant under Docker environment is problematic in case of requiring additional packages, like in our SNMP case. The reason for this is the Home Assistant upgrade process: it will not preserve the custom packages installed by the user under the Home Assistant Docker environment. The proposed workaround to avoid this is executing the scripts remotely, connecting from Docker to de host machine where it is installed (where the control scripts defined above will be available).
@@ -166,6 +168,8 @@ ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa <user>
 
 ```
 ### activeZigbee2mqtt1.sh
+In addition to the parametrization described above, it is needed to consider the maximum time of script execution defined in Home Assistant by design: 1 minute. the full fallback procedure usually takes more than this (mainly becouse of time required to extract and write NVRAM dumps in zigbee USB dongles), so the execution script below is defined to execute in second plane (nohup parameter), and results to be stored in a file if result needs to be checked (result.log in the same script path).
+
 ```
 #!/bin/bash
 
