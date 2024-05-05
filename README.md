@@ -402,7 +402,7 @@ Finally, the following Home Assistant automations.yaml snippets defines the uppe
 
 The prototype is up and running during the last months applying two swicthovers per week. during this time the zigbee network has been expanded from few nodes to use more than 20 devices between sensors and actuators of diferent types and brands. No issues found up to now.
 
-It has also been tested by directly disconnecting the active USB dongle from the environment. It has always leaded to a correct service interruption detection in Home Assistant and switchover to stand-by node (with the caveat of not being able to load the last up-to-date NVRAM dump from active node, but not leading to service disruption, if the last dump is reasonably recent by previosly applying scheduled switchovers).
+It has also been tested by directly disconnecting the active USB dongle from the environment. It has always leaded to a correct service interruption detection in Home Assistant and switchover to stand-by node (with the caveat of not being able to load the last up-to-date NVRAM dump from active node, but not leading to service disruption if the last dump is reasonably recent -by previosly applying scheduled switchovers-).
 
 ## Possible further improvements
 
