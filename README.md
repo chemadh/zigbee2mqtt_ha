@@ -153,10 +153,10 @@ To follow this approach, Home Assistant environment should enable the next point
 - Creation of "sh" directory in root dir of Home Assistant Docker. Local Docker scripts will be defined there to link with the High Availability control scripts in the Docker Host machine. The scripts to be copied should be the ones available on ./scripts/homeAssistant_supervised/ project github path, since it defines the default location for known-hosts and RSA keys for passwordless SSH.
 
 The scripts to define inside the Home Assistant Docker are defined below. The Parameters to replace directly in the contents of these scripts are:
-    - < user >: User of Home Assistant host machine
-    - < ip >: IP of host machine
-    - < script_path >: Path directory where the controller scripts are available in the host machine
-    - SNMP MIBs should be pasted to default OS directory (i.e. /usr/share/snmp/mibs/).
+- < user >: User of Home Assistant host machine
+- < ip >: IP of host machine
+- < script_path >: Path directory where the controller scripts are available in the host machine
+- SNMP MIBs should be pasted to default OS directory (i.e. /usr/share/snmp/mibs/).
 
 ### Environment preparation for Home Assistant installed in Home Assistant OS option
 
@@ -175,9 +175,9 @@ To follow this approach, Home Assistant environment should enable the next point
 cp /root/homeassistant/mibs/* /usr/share/snmp/mibs/
 ```
 The scripts to define inside the Home Assistant Docker are defined below. The Parameters to replace directly in the contents of these scripts are:
-    - < user >: User of Home Assistant host machine
-    - < ip >: IP of host machine
-    - < script_path >: Path directory where the controller scripts are available in the host machine
+- < user >: User of Home Assistant host machine
+- < ip >: IP of host machine
+- < script_path >: Path directory where the controller scripts are available in the host machine
 
 ### ping_mqtts.sh
 ```
