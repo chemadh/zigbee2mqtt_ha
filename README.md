@@ -77,9 +77,12 @@ Script to check connectivity from controller to both zigbee2mqtt instances. It i
 - __snmp_server__: SNMP server where the script will send SNMP traps (v2) notifying about the result of the execution. If this functionality is not required, the value of the variable should be leaved empty. Example value: 192.168.34.103:1234
 - __snmp_host__: Source SNMP host of the trap, following the MIB defined for this purpose. It can be left empty if the SNMP functionality is not required. Example value: homeassistant
 
-The script can be directly executed from the Linux prompt. No command-line parameters are required.
+The script can be directly executed from the Linux prompt. No command-line parameters are required. Resource allocation:
 
-### [stopZigbee2mqtt1.sh](./scripts/homeAssistant/stopZigbee2mqtt1.sh) / [stopZigbee2mqtt2.sh](./scripts/homeAssistant/stopZigbee2mqtt2.sh) 
+- [ping_mqtts.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/ping_mqtts.sh)
+- [ping_mqtts.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/ping_mqtts.sh)
+
+### [stopZigbee2mqtt1.sh] / [stopZigbee2mqtt2.sh]
 
 Couple of scripts to stop remotely each zigbee2mqtt instance. Used by the controller node to initiate a manual switchover between active and stand-by nodes, when MQTT can detect service interruption in the active zigbee2mqtt node. The first lines in the script contains the configuration variables to be updated for each environment. Explanation of each parameter, below:
 
@@ -88,7 +91,12 @@ Couple of scripts to stop remotely each zigbee2mqtt instance. Used by the contro
 - __snmp_server__: SNMP server where the script will send SNMP traps (v2) notifying about the result of the execution. If this functionality is not required, the value of the variable should be leaved empty. Example value: 192.168.34.103:1234
 - __snmp_host__: Source SNMP host of the trap, following the MIB defined for this purpose. It can be left empty if the SNMP functionality is not required. Example value: homeassistant
 
-The script can be directly executed from the Linux prompt. No command-line parameters are required.
+The script can be directly executed from the Linux prompt. No command-line parameters are required. Resource allocation:
+
+- [stopZigbee2mqtt1.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/stopZigbee2mqtt1.sh)
+- [stopZigbee2mqtt1.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/stopZigbee2mqtt1.sh)
+- [stopZigbee2mqtt2.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/stopZigbee2mqtt2.sh)
+- [stopZigbee2mqtt2.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/stopZigbee2mqtt2.sh)
 
 ### [activeZigbee2mqtt1.sh](./scripts/homeAssistant/activeZigbee2mqtt1.sh) / [activeZigbee2mqtt2.sh](./scripts/homeAssistant/activeZigbee2mqtt2.sh)
 
@@ -121,7 +129,12 @@ As described above, both scripts define a similar logic, with different details 
 - __local_aux_dir__: Path of the remote zigbee2mqtt node directory where the up-to-date active configuration files are be stored. Example value: /home/zigbee/scripts/zigbee2mqtt_config/
 - __local_conf_dir__: Path of the remote zigbee2mqtt node directory where the Zigbee2mqtt application reads and updates the configuration when it is active. Example value: /opt/zigbee2mqtt/data/
 
-The scripts can be directly executed from the Linux prompt. No command-line parameters are required.
+The scripts can be directly executed from the Linux prompt. No command-line parameters are required. Resource allocation:
+
+- [activeZigbee2mqtt1.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/activeZigbee2mqtt1.sh)
+- [activeZigbee2mqtt1.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/activeZigbee2mqtt1.sh)
+- [activeZigbee2mqtt2.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/activeZigbee2mqtt2.sh)
+- [activeZigbee2mqtt2.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/activeZigbee2mqtt2.sh)
 
 ## Usage of High-Availability control scripts from Home Assistant
 
@@ -129,15 +142,36 @@ This section assumes that the controller scripts defined previously are deployed
 
 In addition to this, there are some limitations related to the Home Assistant's shell script environment that needs to be addressed.
 
-### Environment preparation for Home Assistant installed in Docker
+### Environment preparation for Home Assistant installed in Docker / Supervised options
 
-Running shell scripts in Home Assistant under Docker environment is problematic in case of requiring additional packages, like in our case, SNMP. The reason for this is the Home Assistant upgrade process: it will not preserve the custom packages installed by the user under the Home Assistant Docker environment. In addition to this, there is a maximum time of script execution defined in Home Assistant by design: 1 minute. The proposed workaround to avoid these issues is executing the scripts remotely, connecting from Docker to de host machine where Home Assistant Docker is running (The control scripts defined above should be stored there).
+Running shell scripts in Home Assistant under Docker or Supervised installation options is problematic in case of requiring additional packages, like in our case, SNMP. The reason for this is the Home Assistant upgrade process: it will not preserve the custom packages installed by the user under the Home Assistant Docker environment. In addition to this, there is a maximum time of script execution defined in Home Assistant by design: 1 minute. The proposed workaround to avoid these issues is executing the scripts remotely, connecting from Home Assistant to the host machine where the system is running (The control scripts defined above should be stored there).
 
-To follow this approach, the Home Assistant Docker environment should enable the next points (it should be accessible from host machine executing sudo docker exec -it homeassistant bash). This parametrization is mainly needed to enable SSH connection without interactive credentials again:
+To follow this approach, Home Assistant environment should enable the next points (it should be accessible from host machine executing sudo docker exec -it homeassistant bash). This parametrization is mainly needed to enable SSH connection without interactive credentials again:
 
 - Generate the RSA public file for the Docker host machine user to connect to via SSH from Home Assistant Docker. In order to avoid accidental removal during updates, it is recommended to be stored in /config/.ssh/id_rsa.pub path of Home Assistant Docker.
 - Define a custom "known hosts" file also in a path where Home Assistant Docker won't remove it. It is recommended to be stored in /config/.ssh/known_hosts.
 - Creation of "sh" directory in root dir of Home Assistant Docker. Local Docker scripts will be defined there to link with the High Availability control scripts in the Docker Host machine.
+
+The scripts to define inside the Home Assistant Docker are defined below. The Parameters to replace directly in the contents of these scripts are:
+    - < user >: User of Home Assistant host machine
+    - < ip >: IP of host machine
+    - < script_path >: Path directory where the controller scripts are available in the host machine
+
+### Environment preparation for Home Assistant installed in Home Assistant OS option
+
+Running shell scripts in Home Assistant OS installation option is also problematic in case of requiring additional packages, like in our case, SNMP. The reason for this is the Home Assistant upgrade process: it will not preserve the custom packages installed by the user under the Home Assistant OS environment. In addition to this, there is also the same maximum time of script execution defined in Home Assistant by design: 1 minute. The proposed workaround to avoid these issues is executing the scripts remotely, connecting from Home Assistant to the plugin "Advanced SSH & Web Terminal" (https://github.com/hassio-addons/addon-ssh/). This component allows enabling SSH access to the shell component, include specific Alpine Linux packages and execute startup scripts. 
+
+To follow this approach, Home Assistant environment should enable the next points (it should be accessible from host machine executing sudo docker exec -it homeassistant bash). This parametrization is mainly needed to enable SSH connection without interactive credentials again:
+
+- Installation of "Advanced SSH & Web Terminal" plugin in Home Assistant.
+- Generate the RSA public file for the Docker host machine user to connect to via SSH from Home Assistant Docker. In order to avoid accidental removal during updates, it is recommended to be stored in /config/.ssh/id_rsa.pub path of Home Assistant "Advanced SSH & Web Terminal" plugin.
+- Define a custom "known hosts" file also in a path where Home Assistant "Advanced SSH & Web Terminal" plugin won't remove it. It is recommended to be stored in /config/.ssh/known_hosts.
+- Creation of "sh" directory in root dir of "Advanced SSH & Web Terminal" plugin. Local Home Assistant scripts will be defined there to execute remotely the High Availability control scripts via SSH in "Advanced SSH & Web Terminal".
+- Configuration of "Advanced SSH & Web Terminal" plugin. Enable remote SSH access using the RSA public key defined in /config/.ssh/id_rsa.pub. Include SNMP packages for Linux Alpine: net-snmp-tools. Definition of startup script to copy the SNMP MIBs to notify about scripts result, in case of storing the MIBs in plugin path /root/homeassistant/mibs/:
+```
+#!/bin/bash
+cp /root/homeassistant/mibs/* /usr/share/snmp/mibs/
+```
 
 The scripts to define inside the Home Assistant Docker are defined below. The Parameters to replace directly in the contents of these scripts are:
     - < user >: User of Home Assistant host machine
