@@ -68,7 +68,7 @@ The scripts are intended to be run with cron or timer services (i.e. each 5 minu
 
 A third node will control the active to stand-by failover action between zigbee2mqtt coordinators (whose configuration is synchronized using the scripts defined above). It makes sense that this third node should be the MQTT broker node (like Mosqitto running in Home Assistant environment), since this element will be notified in case the communication with active zigbee2mqtt fails. The following set of scripts are provided for this purpose:
 
-### [ping_mqtts.sh](./scripts/homeAssistant/ping_mqtts.sh)
+### ping_mqtts.sh
 
 Script to check connectivity from controller to both zigbee2mqtt instances. It is intended to check connectivity with both nodes before making an scheduled active to stand-by switchover. The first lines in the script contains the configuration variables to be updated for each environment. Explanation of each parameter, below:
 
@@ -82,7 +82,7 @@ The script can be directly executed from the Linux prompt. No command-line param
 - [ping_mqtts.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/ping_mqtts.sh)
 - [ping_mqtts.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/ping_mqtts.sh)
 
-### [stopZigbee2mqtt1.sh] / [stopZigbee2mqtt2.sh]
+### stopZigbee2mqtt1.sh / stopZigbee2mqtt2.sh
 
 Couple of scripts to stop remotely each zigbee2mqtt instance. Used by the controller node to initiate a manual switchover between active and stand-by nodes, when MQTT can detect service interruption in the active zigbee2mqtt node. The first lines in the script contains the configuration variables to be updated for each environment. Explanation of each parameter, below:
 
@@ -98,7 +98,7 @@ The script can be directly executed from the Linux prompt. No command-line param
 - [stopZigbee2mqtt2.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/stopZigbee2mqtt2.sh)
 - [stopZigbee2mqtt2.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/stopZigbee2mqtt2.sh)
 
-### [activeZigbee2mqtt1.sh](./scripts/homeAssistant/activeZigbee2mqtt1.sh) / [activeZigbee2mqtt2.sh](./scripts/homeAssistant/activeZigbee2mqtt2.sh)
+### activeZigbee2mqtt1.sh / activeZigbee2mqtt2.sh
 
 Couple of scripts to perform zigbee2mqtt switchover, changing the active service in the first or second node respectively. Sequence of activities followed by each script:
 
@@ -150,12 +150,13 @@ To follow this approach, Home Assistant environment should enable the next point
 
 - Generate the RSA public file for the Docker host machine user to connect to via SSH from Home Assistant Docker. In order to avoid accidental removal during updates, it is recommended to be stored in /config/.ssh/id_rsa.pub path of Home Assistant Docker.
 - Define a custom "known hosts" file also in a path where Home Assistant Docker won't remove it. It is recommended to be stored in /config/.ssh/known_hosts.
-- Creation of "sh" directory in root dir of Home Assistant Docker. Local Docker scripts will be defined there to link with the High Availability control scripts in the Docker Host machine.
+- Creation of "sh" directory in root dir of Home Assistant Docker. Local Docker scripts will be defined there to link with the High Availability control scripts in the Docker Host machine. The scripts to be copied should be the ones available on ./scripts/homeAssistant_supervised/ project github path, since it defines the default location for known-hosts and RSA keys for passwordless SSH.
 
 The scripts to define inside the Home Assistant Docker are defined below. The Parameters to replace directly in the contents of these scripts are:
     - < user >: User of Home Assistant host machine
     - < ip >: IP of host machine
     - < script_path >: Path directory where the controller scripts are available in the host machine
+    - SNMP MIBs should be pasted to default OS directory (i.e. /usr/share/snmp/mibs/).
 
 ### Environment preparation for Home Assistant installed in Home Assistant OS option
 
@@ -166,13 +167,13 @@ To follow this approach, Home Assistant environment should enable the next point
 - Installation of "Advanced SSH & Web Terminal" plugin in Home Assistant.
 - Generate the RSA public file for the Docker host machine user to connect to via SSH from Home Assistant Docker. In order to avoid accidental removal during updates, it is recommended to be stored in /config/.ssh/id_rsa.pub path of Home Assistant "Advanced SSH & Web Terminal" plugin.
 - Define a custom "known hosts" file also in a path where Home Assistant "Advanced SSH & Web Terminal" plugin won't remove it. It is recommended to be stored in /config/.ssh/known_hosts.
-- Creation of "sh" directory in root dir of "Advanced SSH & Web Terminal" plugin. Local Home Assistant scripts will be defined there to execute remotely the High Availability control scripts via SSH in "Advanced SSH & Web Terminal".
+- Creation of "sh" directory in root dir of "Advanced SSH & Web Terminal" plugin. Local Home Assistant scripts will be defined there to execute remotely the High Availability control scripts via SSH in "Advanced SSH & Web Terminal". The scripts to be copied should be the ones available on ./scripts/homeAssistant_os/ project github path, since it defines the custom location for known-hosts and RSA keys for passwordless SSH.
+- Creation of directory inside "Advanced SSH & Web Terminal" plugin, to store the scripts to be executed via SSH from Home Assistant. it's recommended to use "remote" subdirectory inside "sh" directory created before.
 - Configuration of "Advanced SSH & Web Terminal" plugin. Enable remote SSH access using the RSA public key defined in /config/.ssh/id_rsa.pub. Include SNMP packages for Linux Alpine: net-snmp-tools. Definition of startup script to copy the SNMP MIBs to notify about scripts result, in case of storing the MIBs in plugin path /root/homeassistant/mibs/:
 ```
 #!/bin/bash
 cp /root/homeassistant/mibs/* /usr/share/snmp/mibs/
 ```
-
 The scripts to define inside the Home Assistant Docker are defined below. The Parameters to replace directly in the contents of these scripts are:
     - < user >: User of Home Assistant host machine
     - < ip >: IP of host machine
