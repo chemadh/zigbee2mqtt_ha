@@ -79,8 +79,8 @@ Script to check connectivity from controller to both zigbee2mqtt instances. It i
 
 The script can be directly executed from the Linux prompt. No command-line parameters are required. Resource allocation:
 
-- [ping_mqtts.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/ping_mqtts.sh)
-- [ping_mqtts.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/ping_mqtts.sh)
+- [ping_mqtts.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeassistant_supervised/ping_mqtts.sh)
+- [ping_mqtts.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeassistant_os/ping_mqtts.sh)
 
 ### stopZigbee2mqtt1.sh / stopZigbee2mqtt2.sh
 
@@ -93,10 +93,10 @@ Couple of scripts to stop remotely each zigbee2mqtt instance. Used by the contro
 
 The script can be directly executed from the Linux prompt. No command-line parameters are required. Resource allocation:
 
-- [stopZigbee2mqtt1.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/stopZigbee2mqtt1.sh)
-- [stopZigbee2mqtt1.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/stopZigbee2mqtt1.sh)
-- [stopZigbee2mqtt2.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/stopZigbee2mqtt2.sh)
-- [stopZigbee2mqtt2.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/stopZigbee2mqtt2.sh)
+- [stopZigbee2mqtt1.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeassistant_supervised/stopZigbee2mqtt1.sh)
+- [stopZigbee2mqtt1.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeassistant_os/stopZigbee2mqtt1.sh)
+- [stopZigbee2mqtt2.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeassistant_supervised/stopZigbee2mqtt2.sh)
+- [stopZigbee2mqtt2.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeassistant_os/stopZigbee2mqtt2.sh)
 
 ### activeZigbee2mqtt1.sh / activeZigbee2mqtt2.sh
 
@@ -131,10 +131,10 @@ As described above, both scripts define a similar logic, with different details 
 
 The scripts can be directly executed from the Linux prompt. No command-line parameters are required. Resource allocation:
 
-- [activeZigbee2mqtt1.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/activeZigbee2mqtt1.sh)
-- [activeZigbee2mqtt1.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/activeZigbee2mqtt1.sh)
-- [activeZigbee2mqtt2.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_supervised/activeZigbee2mqtt2.sh)
-- [activeZigbee2mqtt2.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeAssistant_os/activeZigbee2mqtt2.sh)
+- [activeZigbee2mqtt1.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeassistant_supervised/activeZigbee2mqtt1.sh)
+- [activeZigbee2mqtt1.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeassistant_os/activeZigbee2mqtt1.sh)
+- [activeZigbee2mqtt2.sh, using default path for known hosts and keys for passwordless SSH](./scripts/homeassistant_supervised/activeZigbee2mqtt2.sh)
+- [activeZigbee2mqtt2.sh, using specific path for known hosts and keys for passwordless SSH](./scripts/homeassistant_os/activeZigbee2mqtt2.sh)
 
 ## Usage of High-Availability control scripts from Home Assistant
 
