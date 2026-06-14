@@ -28,6 +28,13 @@ Common components used in the nodes previously defined:
 
 - __Linux packages__: rsync, snmp (net-snmp-tools for Alpine; snmpd, snmp, libsnmp-dev, for Debian).
   - In addition to this, specifically for zigbee2mqtt nodes: python3, py3-pip. Installation of zigpy-znp python component (pip install zigpy-znp). Aditional info in this link: https://github.com/zigpy/zigpy-znp/blob/0cacf7a51d205ac3a19acde10a8115cf5ac36ce1/TOOLS.md
+    - High availability scripts defined in this solution expect to have zigpy-znp library installed in python virtual environment named venv for zigbee2mqtt nodes user:
+```
+		python -m venv venv
+		source venv/bin/activate
+		pip install zigpy-znp
+    deactivate
+```
 - __NTPD or Timesyncd__ time synchronization service to be active in each node to ensure a correct synchronization of most recent files. It can be skipped if the nodes are virtualized and obtaining time reference from a hypervisor cluster (like Proxmox Virtual Environment - https://pve.proxmox.com/wiki/Main_Page -). 
 - __SNMP MIBs__: The scripts notify about execution results using SNMP traps. The MIBs to be included in each Linux node using the proposed scripts are stored in https://github.com/chemadh/zigbee2mqtt_ha/tree/main/MIBs . In case of no monitoring system available in your installation, the scripts can be configured to not use SNMP, so these packages and MIB installation could be skipped.
 - __Enable remote ssh connection__ between components (MQTT broker and zigbee2mqtt nodes) without interactive credentials. Some example instructions here: https://www.thegeekdiary.com/how-to-run-scp-without-password-prompt-interruption-in-linux/
