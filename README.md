@@ -33,7 +33,7 @@ Common components used in the nodes previously defined:
 		python -m venv venv
 		source venv/bin/activate
 		pip install zigpy-znp
-    deactivate
+		deactivate
 ```
 - __NTPD or Timesyncd__ time synchronization service to be active in each node to ensure a correct synchronization of most recent files. It can be skipped if the nodes are virtualized and obtaining time reference from a hypervisor cluster (like Proxmox Virtual Environment - https://pve.proxmox.com/wiki/Main_Page -). 
 - __SNMP MIBs__: The scripts notify about execution results using SNMP traps. The MIBs to be included in each Linux node using the proposed scripts are stored in https://github.com/chemadh/zigbee2mqtt_ha/tree/main/MIBs . In case of no monitoring system available in your installation, the scripts can be configured to not use SNMP, so these packages and MIB installation could be skipped.
