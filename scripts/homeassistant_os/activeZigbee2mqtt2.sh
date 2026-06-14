@@ -14,6 +14,7 @@ local_aux_dir="/home/zigbee/scripts/zigbee2mqtt_config/"
 local_conf_dir="/opt/zigbee2mqtt/data/"
 
 exit_code=0
+cmd_status=0
 
 # stopping zigbee2mqtt1
 
@@ -71,9 +72,16 @@ else
 fi
 
 # Retrieving NVRAM memory backup from zigbee coordinator USB dongle of zigbee2mqtt1 node (expected to be the last active node)
-command="ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa ${zigbee2mqtt1_remote_ssh} 'source venv/bin/activate && sudo python -m zigpy_znp.tools.nvram_read ${coordinator_port_zigbee2mqtt1} -o ${zigbee2mqtt_nvram_path}${zigbee2mqtt_nvram_file} && deactivate'"
+command="ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa ${zigbee2mqtt1_remote_ssh} 'sudo venv/bin/python -m zigpy_znp.tools.nvram_read ${coordinator_port_zigbee2mqtt1} -o ${zigbee2mqtt_nvram_path}${zigbee2mqtt_nvram_file}'"
 echo "$command"
-if echo "$command" | bash ; then
+echo "$command" | bash
+cmd_status=$?
+if [ $cmd_status -ne 0 ]; then
+        echo "coordinator zigbee2mqtt1 NVRAM backup error, retrying"
+        echo "$command" | bash
+        cmd_status=$?
+fi
+if [ $cmd_status -eq 0 ]; then
         echo "coordinator zigbee2mqtt1 NVRAM backup OK"
         if ! [[ -z "$snmp_server" ]]; then
                 snmptrap -v 2c -c public "$snmp_server" '' CUSTOM-SCRIPT-MIB::netSnmpScriptResEntry CUSTOM-SCRIPT-MIB::scriptName.0 s "activeZigbee2mqtt2.sh" CUSTOM-SCRIPT-MIB::scriptHost.0 s ""$snmp_host"" CUSTOM-SCRIPT-MIB::scriptMessage.0 s "Coordinator zigbee2mqtt1 NVRAM backup OK" CUSTOM-SCRIPT-MIB::scriptStatus.0 s "OK"
@@ -88,9 +96,16 @@ if echo "$command" | bash ; then
                         snmptrap -v 2c -c public "$snmp_server" '' CUSTOM-SCRIPT-MIB::netSnmpScriptResEntry CUSTOM-SCRIPT-MIB::scriptName.0 s "activeZigbee2mqtt2.sh" CUSTOM-SCRIPT-MIB::scriptHost.0 s ""$snmp_host"" CUSTOM-SCRIPT-MIB::scriptMessage.0 s "coordinator NVRAM backup sync in Zigbee2mqtt2 OK" CUSTOM-SCRIPT-MIB::scriptStatus.0 s "OK"
                 fi
                 #cleaning memory of coordinator dongle in zigbee2mqtt2
-                command="ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa ${zigbee2mqtt2_remote_ssh} 'source venv/bin/activate && sudo python -m zigpy_znp.tools.nvram_reset ${coordinator_port_zigbee2mqtt2} && deactivate'"
+                command="ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa ${zigbee2mqtt2_remote_ssh} 'sudo venv/bin/python -m zigpy_znp.tools.nvram_reset ${coordinator_port_zigbee2mqtt2}'"
                 echo "$command"
-                if echo "$command" | bash ; then
+                echo "$command" | bash
+                cmd_status=$?
+                if [ $cmd_status -ne 0 ]; then
+                    echo "coordinator zigbee2mqtt1 NVRAM cleanup error, retrying"
+                    echo "$command" | bash
+                    cmd_status=$?
+                fi
+                if [ $cmd_status -eq 0 ]; then
                         echo "coordinator zigbee2mqtt2 NVRAM reset OK"
                         if ! [[ -z "$snmp_server" ]]; then
                                 snmptrap -v 2c -c public "$snmp_server" '' CUSTOM-SCRIPT-MIB::netSnmpScriptResEntry CUSTOM-SCRIPT-MIB::scriptName.0 s "activeZigbee2mqtt2.sh" CUSTOM-SCRIPT-MIB::scriptHost.0 s ""$snmp_host"" CUSTOM-SCRIPT-MIB::scriptMessage.0 s "coordinator zigbee2mqtt2 NVRAM reset OK" CUSTOM-SCRIPT-MIB::scriptStatus.0 s "OK"
@@ -104,9 +119,16 @@ if echo "$command" | bash ; then
                 fi
 
                 # loading NVRAM memory backup file into zigbee2mqtt2 coordinator dongle
-                command="ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa ${zigbee2mqtt2_remote_ssh} 'source venv/bin/activate && sudo python -m zigpy_znp.tools.nvram_write ${coordinator_port_zigbee2mqtt2} -i ${zigbee2mqtt_nvram_path}${zigbee2mqtt_nvram_file} && deactivate'"
+                command="ssh -o UserKnownHostsFile=/config/.ssh/known_hosts -i /config/.ssh/id_rsa ${zigbee2mqtt2_remote_ssh} 'sudo venv/bin/python -m zigpy_znp.tools.nvram_write ${coordinator_port_zigbee2mqtt2} -i ${zigbee2mqtt_nvram_path}${zigbee2mqtt_nvram_file}'"
                 echo "$command"
-                if echo "$command" | bash ; then
+                echo "$command" | bash
+                cmd_status=$?
+                if [ $cmd_status -ne 0 ]; then
+                    echo "coordinator zigbee2mqtt2 NVRAM load error, retrying"
+                    echo "$command" | bash
+                    cmd_status=$?
+                fi
+                if [ $cmd_status -eq 0 ]; then
                         echo "coordinator zigbee2mqtt2 NVRAM load OK"
                         if ! [[ -z "$snmp_server" ]]; then
                                 snmptrap -v 2c -c public "$snmp_server" '' CUSTOM-SCRIPT-MIB::netSnmpScriptResEntry CUSTOM-SCRIPT-MIB::scriptName.0 s "activeZigbee2mqtt2.sh" CUSTOM-SCRIPT-MIB::scriptHost.0 s ""$snmp_host"" CUSTOM-SCRIPT-MIB::scriptMessage.0 s "coordinator zigbee2mqtt2 NVRAM load OK" CUSTOM-SCRIPT-MIB::scriptStatus.0 s "OK"
